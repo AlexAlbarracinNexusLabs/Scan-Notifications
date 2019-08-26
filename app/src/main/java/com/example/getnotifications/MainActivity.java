@@ -1,5 +1,6 @@
 package com.example.getnotifications;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
+import android.widget.Toast;
+import android.telephony.PhoneNumberUtils;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
@@ -48,9 +51,28 @@ public class MainActivity extends AppCompatActivity {
         MyNotificationService myNotificationService = MyNotificationService.get();
         Log.i(TAG, "Active Notifications: [");
         for (StatusBarNotification notification : myNotificationService.getActiveNotifications()) {
-            Log.i(TAG, "    " + notification.getPackageName() + " / " + notification.getTag());
+            Log.i(TAG, "    " + notification.getPackageName() + " / " + notification.getTag() + " / " + notification.getNotification().extras.getString("android.title") + " / " + notification.getNotification().extras.getString("android.text"));
+
         }
         Log.i(TAG, "]");
+    }
+
+    public static void whatsapp(Activity activity, String phone) {
+        String formattedNumber = PhoneNumberUtils.formatNumber(phone);
+        try{
+            Intent sendIntent =new Intent("android.intent.action.MAIN");
+            sendIntent.setComponent(new ComponentName("com.whatsapp", "com.whatsapp.Conversation"));
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.setType("text/plain");
+            sendIntent.putExtra(Intent.EXTRA_TEXT,"");
+            sendIntent.putExtra("jid", formattedNumber +"@s.whatsapp.net");
+            sendIntent.setPackage("com.whatsapp");
+            activity.startActivity(sendIntent);
+        }
+        catch(Exception e)
+        {
+            Toast.makeText(activity,"Error/n"+ e.toString(),Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean isNotificationServiceEnabled(){
